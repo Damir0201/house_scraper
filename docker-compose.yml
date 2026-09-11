@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_tracks_db
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: secure_password
+      POSTGRES_DB: house_of_tracks_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  bot:
+    build: .
+    container_name: hot_telegram_bot
+    environment:
+      - DB_HOST=db
+      - DB_NAME=house_of_tracks_db
+      - DB_USER=postgres_user
+      - DB_PASSWORD=secure_password
+      - TELEGRAM_TOKEN=8798214070:AAG9jE_HPrWLnNx0hwnuUgy-BOOiD66TaFQ
+    depends_on:
+      - db
+    restart: always
+
+  scheduler:
+    build: .
+    container_name: hot_scheduler
+    command: python scheduler.py
+    environment:
+      - DB_HOST=db
+      - DB_NAME=house_of_tracks_db
+      - DB_USER=postgres_user
+      - DB_PASSWORD=secure_password
+      - TELEGRAM_TOKEN=8798214070:AAG9jE_HPrWLnNx0hwnuUgy-BOOiD66TaFQ
+    depends_on:
+      - db
+    restart: always
+
+volumes:
+  pgdata:
