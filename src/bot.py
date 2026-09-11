@@ -2,6 +2,7 @@ import os
 import asyncio
 from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.request import HTTPXRequest
 from src.database import add_user, get_all_users, get_latest_tracks
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "8798214070:AAG9jE_HPrWLnNx0hwnuUgy-BOOiD66TaFQ")
@@ -69,6 +70,7 @@ async def send_broadcast_notifications(hot_picks, catalog_tracks):
 
 
 def run_bot_listener():
+    request = HTTPXRequest(connect_timeout=30.0, read_timeout=30.0)
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("tracks", tracks_command))
