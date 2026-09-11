@@ -87,6 +87,19 @@ def get_all_users():
     cursor.close()
     conn.close()
     return [row[0] for row in rows]
+def get_latest_tracks(limit=5):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT title, genre, price, track_url 
+        FROM tracks 
+        ORDER BY created_at DESC 
+        LIMIT %s
+    """, (limit,))
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [{"title": r[0], "genre": r[1], "price": r[2], "track_url": r[3]} for r in rows]
 
 if __name__ == "__main__":
   init_db()

@@ -1,5 +1,5 @@
 import asyncio
-from main import main
+from src.main import main
 
 
 async def background_loop():

@@ -2,7 +2,7 @@ import os
 import asyncio
 from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from src.database import add_user, get_all_users
+from src.database import add_user, get_all_users, get_latest_tracks
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "8798214070:AAG9jE_HPrWLnNx0hwnuUgy-BOOiD66TaFQ")
 
@@ -11,6 +11,24 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     add_user(chat_id)
     await update.message.reply_text("Special for ghost producers")
+
+
+async def tracks_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tracks = get_latest_tracks(limit=5)
+
+    if not tracks:
+        await update.message.reply_text("Nothing new uploaded")
+        return
+
+    message = "Последние треки:\n\n"
+    for track in tracks:
+        message += f"• [{track['title']}]({track['track_url']}) — {track['price']}\n"
+
+    await update.message.reply_text(
+        message,
+        parse_mode="Markdown",
+        disable_web_page_preview=True
+    )
 
 
 async def send_broadcast_notifications(hot_picks, catalog_tracks):
@@ -53,5 +71,6 @@ async def send_broadcast_notifications(hot_picks, catalog_tracks):
 def run_bot_listener():
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start_command))
+    app.add_handler(CommandHandler("tracks", tracks_command))
     print("Bot working...")
     app.run_polling()
