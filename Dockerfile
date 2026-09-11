@@ -1,9 +1,9 @@
 FROM python:3.12-slim
 
-# Установка системных зависимостей для Chromium
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     gnupg \
+    chromium \
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -26,9 +26,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Явно разрешаем Playwright скачивать бинарники с прогрессом в лог
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-RUN playwright install chromium
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium
 
 COPY . .
 

@@ -6,10 +6,12 @@ from playwright.async_api import async_playwright
 async def scrape_house_of_tracks():
     async with async_playwright() as p:
         browser = await p.chromium.launch(
+            executable_path="/usr/bin/chromium",
             headless=True,
             args=[
                 "--disable-blink-features=AutomationControlled",
                 "--no-sandbox",
+                "--disable-dev-shm-usage",
             ],
         )
         context = await browser.new_context(
@@ -20,8 +22,6 @@ async def scrape_house_of_tracks():
             viewport={"width": 1440, "height": 900},
         )
         page = await context.new_page()
-
-        print("Http request")
         await page.goto("https://houseoftracks.com/tracks", wait_until="domcontentloaded")
 
         try:
