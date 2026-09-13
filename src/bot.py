@@ -21,7 +21,7 @@ async def tracks_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("Nothing new uploaded")
         return
 
-    message = "Последние треки:\n\n"
+    message = "Last tracks:\n\n"
     for track in tracks:
         message += f"• [{track['title']}]({track['track_url']}) — {track['price']}\n"
 

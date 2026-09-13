@@ -91,11 +91,11 @@ def get_latest_tracks(limit=5):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT title, genre, price, track_url 
-        FROM tracks 
-        ORDER BY created_at DESC 
-        LIMIT %s
-    """, (limit,))
+                   SELECT title, genre, price, track_url
+                   FROM tracks
+                   ORDER BY id DESC
+                       LIMIT %s
+                   """, (limit,))
     rows = cursor.fetchall()
     cursor.close()
     conn.close()
