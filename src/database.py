@@ -108,7 +108,7 @@ def get_new_tracks(limit=3, offset=6):
         SELECT title, genre, price, track_url
         FROM tracks
         ORDER BY id
-        LIMIT %s, OFFSET %s
+        LIMIT %s OFFSET %s
     """, (limit, offset))
     rows=cursor.fetchall()
     cursor.close()
