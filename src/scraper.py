@@ -25,10 +25,9 @@ async def scrape_house_of_tracks():
         await page.goto("https://houseoftracks.com/tracks", wait_until="domcontentloaded")
 
         try:
-            # Ждем появления элементов со ссылками на треки вместо слепого таймера
-            await page.wait_for_selector('a[href*="/ghost-production/"]', timeout=10000)
+            await page.wait_for_selector('text=€', timeout=12000)
         except Exception:
-            print("Warning: selector haven't waited cards, trying something new...")
+            print("Warning: price elements not found, parsing current DOM...")
 
         html_content = await page.content()
         await browser.close()
@@ -36,45 +35,36 @@ async def scrape_house_of_tracks():
         soup = BeautifulSoup(html_content, "html.parser")
         tracks = []
 
-        cards = [
-            a.parent.parent
-            for a in soup.find_all("a", href=True)
-            if "/ghost-production/" in a["href"]
-        ]
-
         seen_urls = set()
-        for card in cards:
-            try:
-                link_elem = card.find("a", href=lambda h: h and "/ghost-production/" in h)
-                if not link_elem:
-                    continue
 
-                href = link_elem["href"]
-                track_url = (
-                    href if href.startswith("http") else "https://houseoftracks.com" + href
-                )
-
-                if track_url in seen_urls:
-                    continue
-                seen_urls.add(track_url)
-
-                title = link_elem.get_text(strip=True)
-                if not title or len(title) < 2:
-                    title_elem = card.find(["h3", "h4", "span"])
-                    title = title_elem.get_text(strip=True) if title_elem else "Unknown"
-
-                price_elem = card.find(string=lambda t: t and "€" in t)
-                price = price_elem.strip() if price_elem else "0"
-
-                if title != "Unknown":
-                    tracks.append({
-                        "title": title,
-                        "genre": "Electronic",
-                        "price": price,
-                        "track_url": track_url,
-                    })
-            except Exception:
+        for a_tag in soup.find_all("a", href=True):
+            href = a_tag["href"]
+            if not any(sub in href for sub in ["/track/", "/ghost-production/"]) and len(href.split('/')) < 3:
                 continue
+
+            parent_row = a_tag.find_parent("div")
+            if not parent_row:
+                continue
+
+            price_elem = parent_row.find(string=lambda t: t and "€" in t)
+            if not price_elem:
+                continue
+
+            track_url = href if href.startswith("http") else "https://houseoftracks.com" + href
+            if track_url in seen_urls:
+                continue
+            seen_urls.add(track_url)
+
+            title = a_tag.get_text(strip=True)
+            if not title or len(title) < 2:
+                continue
+
+            tracks.append({
+                "title": title,
+                "genre": "Electronic",
+                "price": price_elem.strip(),
+                "track_url": track_url,
+            })
 
         hot_picks = tracks[:6] if len(tracks) >= 6 else tracks
         catalog_tracks = tracks[6:] if len(tracks) > 6 else []
