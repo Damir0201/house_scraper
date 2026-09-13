@@ -93,7 +93,7 @@ def get_latest_tracks(limit=5):
     cursor.execute("""
                    SELECT title, genre, price, track_url
                    FROM tracks
-                   ORDER BY id DESC
+                   ORDER BY id
                        LIMIT %s
                    """, (limit,))
     rows = cursor.fetchall()
