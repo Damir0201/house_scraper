@@ -34,22 +34,18 @@ async def scrape_house_of_tracks():
 
         soup = BeautifulSoup(html_content, "html.parser")
         tracks = []
-
         seen_urls = set()
 
-        for a_tag in soup.find_all("a", href=True):
+        # Ищем строки треков по классу, содержащему TrackListRow
+        rows = soup.find_all(class_=lambda c: c and "TrackListRow" in c)
+
+        for row in rows:
+            # Ищем ссылку на трек
+            a_tag = row.find("a", href=lambda h: h and ("/ghost-production/" in h or "/track/" in h))
+            if not a_tag:
+                continue
+
             href = a_tag["href"]
-            if not any(sub in href for sub in ["/track/", "/ghost-production/"]) and len(href.split('/')) < 3:
-                continue
-
-            parent_row = a_tag.find_parent("div")
-            if not parent_row:
-                continue
-
-            price_elem = parent_row.find(string=lambda t: t and "€" in t)
-            if not price_elem:
-                continue
-
             track_url = href if href.startswith("http") else "https://houseoftracks.com" + href
             if track_url in seen_urls:
                 continue
@@ -59,10 +55,14 @@ async def scrape_house_of_tracks():
             if not title or len(title) < 2:
                 continue
 
+            # Ищем цену внутри строки (любой элемент, содержащий символ валюты или цифры с евро)
+            price_elem = row.find(string=lambda t: t and ("€" in t or "EUR" in t))
+            price = price_elem.strip() if price_elem else "N/A"
+
             tracks.append({
                 "title": title,
                 "genre": "Electronic",
-                "price": price_elem.strip(),
+                "price": price,
                 "track_url": track_url,
             })
 
