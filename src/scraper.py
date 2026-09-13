@@ -25,7 +25,7 @@ async def scrape_house_of_tracks():
         await page.goto("https://houseoftracks.com/tracks", wait_until="domcontentloaded")
 
         try:
-            await page.wait_for_selector('text=€', timeout=12000)
+            await page.wait_for_selector('text=$', timeout=12000)
         except Exception:
             print("Warning: price elements not found, parsing current DOM...")
 
