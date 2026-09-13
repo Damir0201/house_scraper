@@ -22,12 +22,12 @@ async def scrape_house_of_tracks():
             viewport={"width": 1440, "height": 900},
         )
         page = await context.new_page()
-        await page.goto("https://houseoftracks.com/tracks", wait_until="domcontentloaded")
+        await page.goto("https://houseoftracks.com/tracks", wait_until="networkidle")
 
         try:
-            await page.wait_for_selector('text=$', timeout=12000)
+            await page.wait_for_selector('[class*="TrackListRow"]', timeout=15000)
         except Exception:
-            print("Warning: price elements not found, parsing current DOM...")
+            print("Warning: track rows not found, parsing current DOM...")
 
         html_content = await page.content()
         await browser.close()
