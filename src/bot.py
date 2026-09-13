@@ -3,7 +3,7 @@ import asyncio
 from telegram import Bot, Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from telegram.request import HTTPXRequest
-from src.database import add_user, get_all_users, get_latest_tracks
+from src.database import add_user, get_all_users, get_latest_tracks, get_new_tracks
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "8798214070:AAG9jE_HPrWLnNx0hwnuUgy-BOOiD66TaFQ")
 
@@ -15,13 +15,29 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def tracks_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    tracks = get_latest_tracks(limit=5)
+    tracks = get_latest_tracks(limit=6)
 
     if not tracks:
         await update.message.reply_text("Nothing new uploaded")
         return
 
-    message = "Last tracks:\n\n"
+    message = "Hot peaks:\n\n"
+    for track in tracks:
+        message += f"• [{track['title']}]({track['track_url']}) — {track['price']}\n"
+
+    await update.message.reply_text(
+        message,
+        parse_mode="Markdown",
+        disable_web_page_preview=True
+    )
+
+async def new_tracks_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tracks=get_new_tracks(limit=3)
+
+    if not tracks:
+        await update.message.reply_text("Nothing new uploaded")
+        return
+    message = "New releases:\n\n"
     for track in tracks:
         message += f"• [{track['title']}]({track['track_url']}) — {track['price']}\n"
 
@@ -74,5 +90,6 @@ def run_bot_listener():
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(CommandHandler("start", start_command))
     app.add_handler(CommandHandler("tracks", tracks_command))
+    app.add_handler(CommandHandler("new_tracks", new_tracks_command))
     print("Bot working...")
     app.run_polling()

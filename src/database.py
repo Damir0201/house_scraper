@@ -87,16 +87,30 @@ def get_all_users():
     cursor.close()
     conn.close()
     return [row[0] for row in rows]
-def get_latest_tracks(limit=5):
+def get_latest_tracks(limit=6):
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-                   SELECT title, genre, price, track_url
-                   FROM tracks
-                   ORDER BY id
-                       LIMIT %s
-                   """, (limit,))
+        SELECT title, genre, price, track_url
+        FROM tracks
+        ORDER BY id
+        LIMIT %s
+    """, (limit,))
     rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [{"title": r[0], "genre": r[1], "price": r[2], "track_url": r[3]} for r in rows]
+
+def get_new_tracks(limit=3, offset=6):
+    conn=get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT title, genre, price, track_url
+        FROM tracks
+        ORDER BY id
+        LIMIT %s, OFFSET %s
+    """, (limit, offset))
+    rows=cursor.fetchall()
     cursor.close()
     conn.close()
     return [{"title": r[0], "genre": r[1], "price": r[2], "track_url": r[3]} for r in rows]
